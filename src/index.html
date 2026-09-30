@@ -39,3 +39,30 @@ onkeydown=e=>{
 
     }[k];
 }
+
+if(D && D[0]+d[0] || D && D[1]+d[1]) d=D;
+
+function game(){
+    if(over)return;
+
+    let now=Date.now();
+
+    if(now-Last>5000){
+        n=Math.max(6,n-2);
+        a=a.filter(q=>q[0]>0&&q[0]<n-1&&q[1]>0&&q[1]<n-1);
+        f=F();
+        last=now;
+
+    }
+}
+
+let h=[
+    a[0][0]+d[0],
+    a[0][1]+d[1]
+];
+
+if(
+    h[0]<=0||h[1]<=0||
+    h[0]>=n-1||h[1]>=n-1||
+    a.some(q=>q[0]==h[0]&&q[1]==h[1])
+)return over=1;
