@@ -7,3 +7,35 @@ content="width=device-width">
     #555}
     button{padding:8px 16px}
 </style>
+
+<h3>SHRINK SNEKK</h3>
+<div>Score: <b id="s">0</b> | Shrink: <b id="t">5.0</b></div>
+<canvas id="c" width="400" height="400"></canvas>
+<button onclick="location.reload()">Restart</button>
+
+<script>
+    c.width=c.height=400;
+    x=c.getContext("2d");
+
+    let n=20, z=20;
+    let a=[[10,10]],d=[1,0],f=F();
+    let score=0, last=Date.now(),over=0;
+
+    function F(){
+        let p;
+        do p=[Math.random()*n|0,Math.random()*n|0];
+        while(a.some(q=>q+""==p+""));
+        return p;
+        
+    }
+
+onkeydown=e=>{
+    let k=e.key;
+    let D={
+        ArrowUp:[0,-1],
+        ArrowDown:[0,1],
+        ArrowLeft:[-1,0],
+        ArrowRight:[1,0],
+
+    }[k];
+}
