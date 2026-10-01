@@ -14,78 +14,115 @@ content="width=device-width">
 <button onclick="location.reload()">Restart</button>
 
 <script>
-    c.width=c.height=400;
-    x=c.getContext("2d");
+let c=document.getElementById("c"),x=c.getContext("2d");
+let s=document.getElementById("s"),t=document.getElementById("t");
 
-    let n=20, z=20;
-    let a=[[10,10]],d=[1,0],f=F();
-    let score=0, last=Date.now(),over=0;
+let size=20,cell=20;
+let snekk=[[10,10]],dir=[1,0],apple;
+let points=0,last=Date.now(),gameOver=false;
+let audio=new AudioContext();
 
-    function F(){
-        let p;
-        do p=[Math.random()*n|0,Math.random()*n|0];
-        while(a.some(q=>q+""==p+""));
-        return p;
-        
-    }
+function newApple(){
+    do apple=[
+        1+Math.random()*(size-2)|0,
+        1+Math.random()*(size-2)|0
+    ];
+    while(snekk.some(p=>p[0]==apple[0]&&p[1]==apple[1]));
+}
+
+newApple();
 
 onkeydown=e=>{
-    let k=e.key;
     let D={
         ArrowUp:[0,-1],
         ArrowDown:[0,1],
         ArrowLeft:[-1,0],
         ArrowRight:[1,0]
-    }[k];
+    }[e.key];
 
-    if(D && D[0]+d[0] || D && D[1]+d[1]) d=D;
+    if(D&&(D[0]+dir[0]||D[1]+dir[1])){
+        dir=D;
+        e.preventDefault();
+    }
+};
+
+function eatSound(){
+    audio.resume();
+    let beep=audio.createOscillator();
+    let volume=audio.createGain();
+
+    beep.connect(volume);
+    volume.connect(audio.destination);
+
+    beep.frequency.value=700;
+    volume.gain.value=.05;
+    beep.start();
+    beep.stop(audio.currentTime+.08);
 }
 
 function game(){
-    if(over)return;
+    if(gameOver)return;
 
     let now=Date.now();
 
-    if(now-last>=5000){
-        n=Math.max(6,n-2);
-        a=a.filter(q=>q[0]>0&&q[0]<n-1&&q[1]>0&&q[1]<n-1);
-        f=F();
+    if(now-last>=5000&&size>6){
+        size-=2;
         last=now;
+
+        snekk=snekk.filter(p=>
+            p[0]>0&&p[0]<size-1&&
+            p[1]>0&&p[1]<size-1
+        );
+
+        newApple();
     }
 
-    let h=[
-        a[0][0]+d[0],
-        a[0][1]+d[1]
+    let head=[
+        snekk[0][0]+dir[0],
+        snekk[0][1]+dir[1]
     ];
 
+    let eating=head+""==apple+"";
+
     if(
-        h[0]<=0||h[1]<=0||
-        h[0]>=n-1||h[1]>=n-1||
-        a.some(q=>q[0]==h[0]&&q[1]==h[1])
-    )return over=1;
-
-    a.unshift(h);
-
-    if(h+""==f+""){
-        score++;
-        s.textContent=score;
-        f=F();
-        last=now;
-    }else{
-        a.pop();
+        head[0]<=0||head[1]<=0||
+        head[0]>=size-1||head[1]>=size-1||
+        snekk.slice(0,eating?snekk.length:snekk.length-1)
+        .some(p=>p[0]==head[0]&&p[1]==head[1])
+    ){
+        gameOver=true;
+        return;
     }
 
+    snekk.unshift(head);
+
+    if(eating){
+        points++;
+        s.textContent=points;
+        eatSound();
+        newApple();
+        last=now;
+    }else{
+        snekk.pop();
+    }
+
+    t.textContent=Math.max(0,(5000-now+last)/1000).toFixed(1);
     draw();
-    t.textContent=((5000-now+last)/1000).toFixed(1);
 }
+
 function draw(){
     x.clearRect(0,0,400,400);
+
     x.fillStyle="#e33";
-    x.fillRect(f[0]*z,f[1]*z,z,z);
+    x.fillRect(apple[0]*cell,apple[1]*cell,cell,cell);
+
     x.fillStyle="#5f5";
-    a.forEach(q=>x.fillRect(q[0]*z,q[1]*z,z-2,z-2));
+    snekk.forEach(p=>
+        x.fillRect(p[0]*cell,p[1]*cell,cell-2,cell-2)
+    );
+
     x.strokeStyle="#777";
-    x.strokeRect(0,0,n*z,n*z);
+    x.strokeRect(0,0,size*cell,size*cell);
 }
 
 setInterval(game,100);
